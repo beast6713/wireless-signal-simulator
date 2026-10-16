@@ -44,48 +44,9 @@ HTML_TEMPLATE = f"""<!doctype html>
       background-color: #090d16;
       color: #f3f4f6;
     }}
-    #loading-overlay {{
-      position: fixed;
-      inset: 0;
-      background: #090d16;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 99999;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      transition: opacity 0.5s ease;
-    }}
-    .spinner {{
-      width: 50px;
-      height: 50px;
-      border: 3px solid rgba(56, 189, 248, 0.2);
-      border-radius: 50%;
-      border-top-color: #38bdf8;
-      animation: spin 1s ease-in-out infinite;
-      margin-bottom: 20px;
-    }}
-    @keyframes spin {{
-      to {{ transform: rotate(360deg); }}
-    }}
-    .loading-title {{
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #f1f5f9;
-      margin-bottom: 8px;
-    }}
-    .loading-sub {{
-      font-size: 0.85rem;
-      color: #94a3b8;
-    }}
   </style>
 </head>
 <body>
-  <div id="loading-overlay">
-    <div class="spinner"></div>
-    <div class="loading-title">📡 Initializing Wireless Simulator...</div>
-    <div class="loading-sub">Loading WebAssembly Python Runtime (Pyodide, NumPy, SciPy, Matplotlib)</div>
-  </div>
   <div id="root"></div>
 
   <script type="module">
@@ -100,21 +61,7 @@ HTML_TEMPLATE = f"""<!doctype html>
         files: files,
       }},
       document.getElementById("root")
-    ).then(() => {{
-      const loader = document.getElementById("loading-overlay");
-      if (loader) {{
-        loader.style.opacity = "0";
-        setTimeout(() => loader.remove(), 500);
-      }}
-    }}).catch((err) => {{
-      const loader = document.getElementById("loading-overlay");
-      if (loader) {{
-        loader.innerHTML = `
-          <div style="color: #f87171; font-size: 1.2rem; font-weight: bold; margin-bottom: 8px;">Initialization Failed</div>
-          <div style="color: #94a3b8; font-size: 0.9rem; max-width: 500px; text-align: center;">${{err}}</div>
-        `;
-      }}
-    }});
+    );
   </script>
 </body>
 </html>
