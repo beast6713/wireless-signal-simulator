@@ -1,0 +1,14 @@
+# Wireless Digital Signal Modulation and Transmission Simulator
+# Core dependencies for Phase 0
+
+# Interactive web application framework
+streamlit>=1.40.0
+
+# Numerical computations and array processing for signals
+numpy>=2.0.0
+
+# 2D signal waveform and constellation plotting
+matplotlib>=3.9.0
+
+# Scientific signal processing utilities
+scipy>=1.15.0
