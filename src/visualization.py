@@ -123,16 +123,71 @@ def plot_modulated_signal(
     if max_samples is not None and max_samples > 0:
         arr = arr[:max_samples]
 
+def _style_figure(fig: plt.Figure) -> None:
+    """Apply modern telemetry dark styling to figure."""
+    fig.patch.set_facecolor("#0b1329")
+
+
+def _style_axis(ax: plt.Axes, title: Optional[str] = None) -> None:
+    """Apply futuristic oscilloscope dark styling to an axis."""
+    ax.set_facecolor("#0f172a")
+    if title:
+        ax.set_title(title, fontsize=11, fontweight="bold", color="#f8fafc", pad=8)
+    ax.tick_params(colors="#94a3b8", labelsize=8.5)
+    ax.xaxis.label.set_color("#cbd5e1")
+    ax.yaxis.label.set_color("#cbd5e1")
+    for spine in ax.spines.values():
+        spine.set_color("#334155")
+        spine.set_linewidth(0.8)
+    ax.grid(True, linestyle=":", color="#334155", alpha=0.55)
+
+
+def _style_legend(ax: plt.Axes, loc: str = "upper right") -> None:
+    """Style legend box for dark theme."""
+    legend = ax.legend(loc=loc, fontsize=8.5, facecolor="#1e293b", edgecolor="#334155")
+    if legend:
+        for text in legend.get_texts():
+            text.set_color("#f1f5f9")
+
+
+def plot_modulated_signal(
+    signal: Any,
+    sample_rate: float,
+    title: str = "Modulated Signal",
+    max_samples: Optional[int] = None,
+) -> plt.Figure:
+    """Plot the transmitted modulated signal waveform against time in seconds.
+
+    Args:
+        signal: 1D array of discrete signal samples.
+        sample_rate: Sampling frequency in Hz (> 0).
+        title: Plot title (default: "Modulated Signal").
+        max_samples: Optional limit on the number of samples plotted for visual clarity.
+
+    Returns:
+        plt.Figure: Matplotlib figure ready for rendering in Streamlit.
+
+    Raises:
+        ValueError, TypeError: If signal or sample_rate is invalid.
+    """
+    arr = _validate_signal(signal, "Modulated signal")
+    if sample_rate <= 0:
+        raise ValueError(f"Sample rate must be positive, got {sample_rate}.")
+
+    if max_samples is not None and max_samples > 0:
+        arr = arr[:max_samples]
+
     t = np.arange(len(arr), dtype=float) / sample_rate
 
     fig, ax = plt.subplots(figsize=(10, 3.2), layout="constrained")
-    ax.plot(t, arr, color="#0066cc", linewidth=1.2, label="Modulated Waveform")
-    ax.set_title(title, fontsize=11, fontweight="bold")
+    _style_figure(fig)
+    _style_axis(ax, title)
+
+    ax.plot(t, arr, color="#38bdf8", linewidth=1.4, label="Modulated Carrier (Tx)")
     ax.set_xlabel("Time (s)", fontsize=9)
     ax.set_ylabel("Amplitude", fontsize=9)
     ax.set_ylim(-1.3, 1.3)
-    ax.grid(True, linestyle=":", alpha=0.6)
-    ax.legend(loc="upper right", fontsize=8)
+    _style_legend(ax)
 
     return fig
 
@@ -167,12 +222,13 @@ def plot_received_signal(
     t = np.arange(len(arr), dtype=float) / sample_rate
 
     fig, ax = plt.subplots(figsize=(10, 3.2), layout="constrained")
-    ax.plot(t, arr, color="#d9534f", linewidth=1.1, label="Received Signal (with AWGN)")
-    ax.set_title(title, fontsize=11, fontweight="bold")
+    _style_figure(fig)
+    _style_axis(ax, title)
+
+    ax.plot(t, arr, color="#f43f5e", linewidth=1.1, label="Received Signal (AWGN Rx)")
     ax.set_xlabel("Time (s)", fontsize=9)
     ax.set_ylabel("Amplitude", fontsize=9)
-    ax.grid(True, linestyle=":", alpha=0.6)
-    ax.legend(loc="upper right", fontsize=8)
+    _style_legend(ax)
 
     return fig
 
@@ -208,8 +264,6 @@ def plot_bit_comparison(
         rx = rx[:max_bits]
 
     n = len(tx)
-    # Generate bit interval edges for step plotting: 0, 1, 2, ..., n
-    indices = np.arange(n)
     step_x = np.arange(n + 1)
     step_tx = np.append(tx, tx[-1])
     step_rx = np.append(rx, rx[-1])
@@ -220,31 +274,31 @@ def plot_bit_comparison(
     fig, (ax_tx, ax_rx) = plt.subplots(
         2, 1, figsize=(10, 3.8), sharex=True, layout="constrained"
     )
+    _style_figure(fig)
+    _style_axis(ax_tx, "Transmitted vs. Recovered Binary Bitstream")
+    _style_axis(ax_rx)
 
     # Subplot 1: Transmitted Bits
-    ax_tx.step(step_x, step_tx, where="post", color="#0066cc", linewidth=1.5, label="Transmitted Bits")
-    ax_tx.set_title("Transmitted vs. Recovered Binary Bitstream", fontsize=11, fontweight="bold")
+    ax_tx.step(step_x, step_tx, where="post", color="#38bdf8", linewidth=1.6, label="Transmitted Bits")
     ax_tx.set_ylabel("Tx Level", fontsize=9)
     ax_tx.set_ylim(-0.25, 1.25)
     ax_tx.set_yticks([0, 1])
-    ax_tx.grid(True, linestyle=":", alpha=0.6)
-    ax_tx.legend(loc="upper right", fontsize=8)
+    _style_legend(ax_tx)
 
     # Subplot 2: Recovered Bits
-    ax_rx.step(step_x, step_rx, where="post", color="#28a745", linewidth=1.5, label="Recovered Bits")
-    # Highlight bit errors with red markers
+    ax_rx.step(step_x, step_rx, where="post", color="#34d399", linewidth=1.6, label="Recovered Bits")
+    # Highlight bit errors with vibrant red cross markers
     if error_indices:
         err_x = [i + 0.5 for i in error_indices]
         err_y = [rx[i] for i in error_indices]
         ax_rx.scatter(
-            err_x, err_y, color="#d9534f", s=60, zorder=5, marker="x", linewidths=2.0, label="Bit Error"
+            err_x, err_y, color="#ef4444", s=70, zorder=5, marker="x", linewidths=2.2, label="Bit Error"
         )
     ax_rx.set_xlabel("Bit Index", fontsize=9)
     ax_rx.set_ylabel("Rx Level", fontsize=9)
     ax_rx.set_ylim(-0.25, 1.25)
     ax_rx.set_yticks([0, 1])
-    ax_rx.grid(True, linestyle=":", alpha=0.6)
-    ax_rx.legend(loc="upper right", fontsize=8)
+    _style_legend(ax_rx)
 
     return fig
 
@@ -289,21 +343,21 @@ def plot_signal_comparison(
     fig, (ax_top, ax_bot) = plt.subplots(
         2, 1, figsize=(10, 4.4), sharex=True, layout="constrained"
     )
+    _style_figure(fig)
+    _style_axis(ax_top, "Signal Comparison: Transmitter vs. Channel Output")
+    _style_axis(ax_bot)
 
     # Subplot 1: Clean Transmitted Waveform
-    ax_top.plot(t, tx, color="#0066cc", linewidth=1.2, label="Clean Modulated Signal")
-    ax_top.set_title("Signal Comparison: Transmitter vs. Channel Output", fontsize=11, fontweight="bold")
+    ax_top.plot(t, tx, color="#38bdf8", linewidth=1.3, label="Clean Carrier (Tx)")
     ax_top.set_ylabel("Amplitude", fontsize=9)
     ax_top.set_ylim(-1.3, 1.3)
-    ax_top.grid(True, linestyle=":", alpha=0.6)
-    ax_top.legend(loc="upper right", fontsize=8)
+    _style_legend(ax_top)
 
     # Subplot 2: Noisy Received Waveform
-    ax_bot.plot(t, rx, color="#d9534f", linewidth=1.1, alpha=0.9, label="Noisy Received Signal (AWGN)")
-    ax_bot.plot(t, tx, color="#0066cc", linestyle="--", linewidth=0.8, alpha=0.5, label="Clean Reference")
+    ax_bot.plot(t, rx, color="#f43f5e", linewidth=1.1, alpha=0.9, label="Noisy Received Signal (AWGN)")
+    ax_bot.plot(t, tx, color="#38bdf8", linestyle="--", linewidth=0.9, alpha=0.6, label="Clean Reference")
     ax_bot.set_xlabel("Time (s)", fontsize=9)
     ax_bot.set_ylabel("Amplitude", fontsize=9)
-    ax_bot.grid(True, linestyle=":", alpha=0.6)
-    ax_bot.legend(loc="upper right", fontsize=8)
+    _style_legend(ax_bot)
 
     return fig
