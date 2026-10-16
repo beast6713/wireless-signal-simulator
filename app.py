@@ -40,6 +40,23 @@ def main() -> None:
         layout="wide",
     )
 
+    # Hide and disable Streamlit Deploy button
+    st.markdown(
+        """
+        <style>
+        .stAppDeployButton,
+        [data-testid="stAppDeployButton"],
+        div[data-testid="stAppDeployButton"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
     # Main Heading and Academic Description
     st.title("📡 Wireless Signal Modulation and Transmission Simulator")
     st.markdown(
